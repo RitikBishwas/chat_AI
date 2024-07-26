@@ -168,6 +168,13 @@ app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../client/dist", "index.html"));
 });
 
+
+// app.get("/", (req, res) => {
+// app.use(express.static(path.resolve(__dirname, "client", "build")));
+// res.sendFile(path.resolve(__dirname, "client", "build", "index.html"));
+// });
+
+
 app.listen(port, () => {
   connect();
   console.log(`Server running on port ${port}`);
