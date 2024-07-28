@@ -19,7 +19,6 @@ const __dirname = path.dirname(__filename);
 app.use(
   cors({
     origin: process.env.CLIENT_URL,
-    methods: ["POST", "GET"],
     credentials: true,
   })
 );
@@ -51,6 +50,7 @@ app.post("/api/chats", ClerkExpressRequireAuth(), async (req, res) => {
   const { text } = req.body;
 
   try {
+    // CREATE A NEW CHAT
     const newChat = new Chat({
       userId: userId,
       history: [{ role: "user", parts: [{ text }] }],
@@ -58,8 +58,10 @@ app.post("/api/chats", ClerkExpressRequireAuth(), async (req, res) => {
 
     const savedChat = await newChat.save();
 
+    // CHECK IF THE USERCHATS EXISTS
     const userChats = await UserChats.findOne({ userId: userId });
 
+    // IF DOESN'T EXIST CREATE A NEW ONE AND ADD THE CHAT IN THE CHATS ARRAY
     if (!userChats) {
       const newUserChats = new UserChats({
         userId: userId,
@@ -73,6 +75,7 @@ app.post("/api/chats", ClerkExpressRequireAuth(), async (req, res) => {
 
       await newUserChats.save();
     } else {
+      // IF EXISTS, PUSH THE CHAT TO THE EXISTING ARRAY
       await UserChats.updateOne(
         { userId: userId },
         {
@@ -159,15 +162,18 @@ app.use((err, req, res, next) => {
 });
 
 // PRODUCTION
-const clientDistPath = path.join(__dirname, "../client/dist");
-console.log(`Serving static files from ${clientDistPath}`);
-app.use(express.static(clientDistPath));
+app.use(express.static(path.join(__dirname, "../client/dist")));
 
 app.get("*", (req, res) => {
-  const indexPath = path.join(clientDistPath, "index.html");
-  console.log(`Serving index.html from ${indexPath}`);
-  res.sendFile(indexPath);
+  res.sendFile(path.join(__dirname, "../client/dist", "index.html"));
 });
+
+
+// app.get("/", (req, res) => {
+// app.use(express.static(path.resolve(__dirname, "client", "build")));
+// res.sendFile(path.resolve(__dirname, "client", "build", "index.html"));
+// });
+
 
 app.listen(port, () => {
   connect();
